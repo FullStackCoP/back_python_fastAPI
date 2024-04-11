@@ -1,5 +1,5 @@
 from typing import Optional
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 
 app = FastAPI()
 
@@ -7,6 +7,14 @@ app = FastAPI()
 def read_root():
     return {"Hello": "World"}
 
-@app.get("/items/{item_id}")
-def read_item(item_id: int, q: Optional[str] = None):
-    return {"item_id": item_id, "q": q}
+@app.post("/auth/login")
+def read_login(request: Request):
+    print(request.headers)
+    print(request.body)
+    return {"accessToken": "jadskjflwkejrkljwelrkjlwkjlrkjqwlke" }
+
+@app.post("/auth/token")
+def read_login(request: Request):
+    print(request.headers)
+    print(request.body)
+    return {"refreshToken": "15i4j15jkljasdfjiojewrkjl;qwer98112312" }
