@@ -11,10 +11,10 @@ def read_root():
 def read_login(request: Request):
     print(request.headers)
     print(request.body)
-    return {"accessToken": "jadskjflwkejrkljwelrkjlwkjlrkjqwlke" }
+    return {"accessToken": "jadskjflwkejrkljwelrkjlwkjlrkjqwlke", "refreshToken": "15i4j15jkljasdfjiojewrkjl;qwer98112312" }
 
 @app.post("/auth/token")
-def read_login(request: Request):
+def read_token(request: Request):
     print(request.headers)
     print(request.body)
     return {"refreshToken": "15i4j15jkljasdfjiojewrkjl;qwer98112312" }
