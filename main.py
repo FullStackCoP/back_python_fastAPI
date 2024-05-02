@@ -1,3 +1,4 @@
+from datetime import datetime
 import json
 import jwt
 from typing import Optional
@@ -70,14 +71,33 @@ def read_token(request: Request):
 def get_all_restaurant():
     # 레스토랑 정보를 데이터베이스에서 가져옵니다.
     restaurants = [
-        Restaurant(id="1", name="", thumUrl="", tag=[], priceRage="", ratings=0.0, ratingsCount=0, deliveryTime="", deliveryFee=0),
+        Restaurant(id="1", name="My restaurant", thumbUrl="/1", tags=['떡볶이', '치즈', '매운맛'], priceRange="sale", ratings=0.0, ratingsCount=0, deliveryTime=10, deliveryFee=0),
+        Restaurant(id="1", name="My restaurant", thumbUrl="/2", tags=['ttttt'], priceRange="sale", ratings=0.0, ratingsCount=0, deliveryTime=20, deliveryFee=0),
+        Restaurant(id="1", name="My restaurant", thumbUrl="/3", tags=['ttttt'], priceRange="sale", ratings=0.0, ratingsCount=0, deliveryTime=30, deliveryFee=0),
+        Restaurant(id="1", name="My restaurant", thumbUrl="/4", tags=['ttttt'], priceRange="sale", ratings=0.0, ratingsCount=0, deliveryTime=40, deliveryFee=0),
+        Restaurant(id="1", name="My restaurant", thumbUrl="/6", tags=['ttttt'], priceRange="sale", ratings=0.0, ratingsCount=0, deliveryTime=50, deliveryFee=0),
+
     ]
-    return restaurants
+    # 총 데이터 개수 계산
+    total_count = len(restaurants)
+
+    # 더 많은 데이터가 있는지 여부 확인
+    has_more = total_count > 20  # 예: 20개 이상만 'hasNext'를 True로 설정
+
+    # JSON 형식으로 응답 데이터 구성
+    response_data = {
+        "meta": {
+            "count": total_count,
+            "hasMore": has_more
+        },
+        "data": restaurants
+    }
+    return response_data
 
 @app.get("/restaurant/{rid}")
 def get_restaurant(rid: int = Path(...)):
     # 레스토랑 정보를 데이터베이스에서 가져옵니다.
-    restaurant = Restaurant(name="My Restaurant", address="123 Main St", cuisine="Korean")
+    restaurant = Restaurant(id="1", name="My restaurant", thumbUrl="/thumNail", tags=['ttttt'], priceRange="sale", ratings=0.0, ratingsCount=0, deliveryTime=30, deliveryFee=0)
     return restaurant
 
 @app.get("/restaurant/{rid}/ranking")

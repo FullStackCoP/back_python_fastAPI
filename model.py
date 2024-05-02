@@ -5,12 +5,12 @@ from pydantic import BaseModel
 class Restaurant(BaseModel):
     id: str
     name: str
-    thumUrl: str
-    tag: List[str]
-    priceRage: str
+    thumbUrl: str
+    tags: List[str]
+    priceRange: str
     ratings: float
     ratingsCount: int
-    deliveryTime: datetime.time 
+    deliveryTime: int
     deliveryFee: int
 
 class RankingItem(BaseModel):
