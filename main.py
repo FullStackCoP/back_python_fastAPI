@@ -3,10 +3,10 @@ import json
 import jwt
 from jwt import ExpiredSignatureError, InvalidTokenError, PyJWTError
 from typing import Optional
-from fastapi import FastAPI, HTTPException, Request, Path
+from fastapi import FastAPI, HTTPException, Request, Header
 from pydantic import BaseModel
 from model import RankingItem, Restaurant
-from fastapi import Security, HTTPException, Depends
+from fastapi import HTTPException, Depends, Path
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 
 app = FastAPI()
@@ -67,6 +67,7 @@ def read_root():
 @app.post("/auth/login")
 async def login(request: Request):
     body = await request.body()
+    print(f'body : ${body}')
     data = json.loads(body)
     print(data)
     name, pw = data["username"], data["password"]
@@ -79,9 +80,11 @@ async def login(request: Request):
 
 
 @app.post("/auth/token")
-def read_token(request: Request):
+def read_token(request: Request, authorization: str = Header(None)):
     print(request.headers)
     print(request.body)
+    if authorization is None or authorization.lower() == "bearer null":
+        raise HTTPException(status_code=401, detail="Invalid or missing authorization header")
     return {"refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InVzZXIiLCJyb2xlIjoicGFzc3dvcmQifQ.3qDjPaMkILvMRtBgt1VkW4jfyfaMYBd7taYUtatn4cw" }
 
 @app.get("/restaurant", dependencies=[Depends(verify_token)])
