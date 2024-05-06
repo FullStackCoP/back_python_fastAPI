@@ -1,13 +1,16 @@
 from datetime import datetime
 import json
 import jwt
+from jwt import ExpiredSignatureError, InvalidTokenError, PyJWTError
 from typing import Optional
 from fastapi import FastAPI, HTTPException, Request, Path
 from pydantic import BaseModel
-
 from model import RankingItem, Restaurant
+from fastapi import Security, HTTPException, Depends
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 
 app = FastAPI()
+security = HTTPBearer()
 
 class UserLogin(BaseModel):
     username: str
@@ -36,12 +39,26 @@ def generate_token(user: UserLogin):
         "role": user["password"],
     }
     token = jwt.encode(token_data, SECRET_KEY, algorithm="HS256")
+    print(token)
     return token
 
 def read_login(request: Request):
     print(request.headers)
     print(request.body)
-    return {"accessToken": "jadskjflwkejrkljwelrkjlwkjlrkjqwlke", "refreshToken": "15i4j15jkljasdfjiojewrkjl;qwer98112312" }
+    return {"accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InVzZXIiLCJyb2xlIjoicGFzc3dvcmQifQ.3qDjPaMkILvMRtBgt1VkW4jfyfaMYBd7taYUtatn4cw", "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InVzZXIiLCJyb2xlIjoicGFzc3dvcmQifQ.3qDjPaMkILvMRtBgt1VkW4jfyfaMYBd7taYUtatn4cw" }
+
+def verify_token(auth: HTTPAuthorizationCredentials = Depends(security)):
+    token = auth.credentials
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
+    except ExpiredSignatureError:
+        raise HTTPException(status_code=401, detail="Token expired")
+    except InvalidTokenError:
+        raise HTTPException(status_code=401, detail="Invalid token")
+    except PyJWTError:
+        raise HTTPException(status_code=401, detail="Error in token decoding")
+    return payload
+
 
 @app.get("/")
 def read_root():
@@ -65,9 +82,9 @@ async def login(request: Request):
 def read_token(request: Request):
     print(request.headers)
     print(request.body)
-    return {"refreshToken": "15i4j15jkljasdfjiojewrkjl;qwer98112312" }
+    return {"refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InVzZXIiLCJyb2xlIjoicGFzc3dvcmQifQ.3qDjPaMkILvMRtBgt1VkW4jfyfaMYBd7taYUtatn4cw" }
 
-@app.get("/restaurant")
+@app.get("/restaurant", dependencies=[Depends(verify_token)])
 def get_all_restaurant():
     # 레스토랑 정보를 데이터베이스에서 가져옵니다.
     restaurants = [
@@ -94,7 +111,7 @@ def get_all_restaurant():
     }
     return response_data
 
-@app.get("/restaurant/{rid}")
+@app.get("/restaurant/{rid}", dependencies=[Depends(verify_token)])
 def get_restaurant(rid: int = Path(...)):
     # 레스토랑 정보를 데이터베이스에서 가져옵니다.
     restaurant = Restaurant(id="1", name="My restaurant", thumbUrl="/thumNail", tags=['ttttt'], priceRange="sale", ratings=0.0, ratingsCount=0, deliveryTime=30, deliveryFee=0)
