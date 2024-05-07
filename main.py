@@ -1,16 +1,14 @@
 from datetime import datetime
 import json
+import time
 import jwt
-from jwt import ExpiredSignatureError, InvalidTokenError, PyJWTError
 from typing import Optional
-from fastapi import FastAPI, HTTPException, Request, Header
+from fastapi import FastAPI, HTTPException, Request, Path
 from pydantic import BaseModel
-from model import RankingItem, Restaurant
-from fastapi import HTTPException, Depends, Path
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+
+from model import Product, RankingItem, Restaurant, RestaurantDetail
 
 app = FastAPI()
-security = HTTPBearer()
 
 class UserLogin(BaseModel):
     username: str
@@ -39,26 +37,12 @@ def generate_token(user: UserLogin):
         "role": user["password"],
     }
     token = jwt.encode(token_data, SECRET_KEY, algorithm="HS256")
-    print(token)
     return token
 
 def read_login(request: Request):
     print(request.headers)
     print(request.body)
-    return {"accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InVzZXIiLCJyb2xlIjoicGFzc3dvcmQifQ.3qDjPaMkILvMRtBgt1VkW4jfyfaMYBd7taYUtatn4cw", "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InVzZXIiLCJyb2xlIjoicGFzc3dvcmQifQ.3qDjPaMkILvMRtBgt1VkW4jfyfaMYBd7taYUtatn4cw" }
-
-def verify_token(auth: HTTPAuthorizationCredentials = Depends(security)):
-    token = auth.credentials
-    try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
-    except ExpiredSignatureError:
-        raise HTTPException(status_code=401, detail="Token expired")
-    except InvalidTokenError:
-        raise HTTPException(status_code=401, detail="Invalid token")
-    except PyJWTError:
-        raise HTTPException(status_code=401, detail="Error in token decoding")
-    return payload
-
+    return {"accessToken": "jadskjflwkejrkljwelrkjlwkjlrkjqwlke", "refreshToken": "15i4j15jkljasdfjiojewrkjl;qwer98112312" }
 
 @app.get("/")
 def read_root():
@@ -67,7 +51,6 @@ def read_root():
 @app.post("/auth/login")
 async def login(request: Request):
     body = await request.body()
-    print(f'body : ${body}')
     data = json.loads(body)
     print(data)
     name, pw = data["username"], data["password"]
@@ -80,22 +63,21 @@ async def login(request: Request):
 
 
 @app.post("/auth/token")
-def read_token(request: Request, authorization: str = Header(None)):
+def read_token(request: Request):
     print(request.headers)
     print(request.body)
-    if authorization is None or authorization.lower() == "bearer null":
-        raise HTTPException(status_code=401, detail="Invalid or missing authorization header")
-    return {"refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InVzZXIiLCJyb2xlIjoicGFzc3dvcmQifQ.3qDjPaMkILvMRtBgt1VkW4jfyfaMYBd7taYUtatn4cw" }
+    return {"accessToken": "jadskjflwkejrkljwelrkjlwkjlrkjqwlke", "refreshToken": "15i4j15jkljasdfjiojewrkjl;qwer98112312" }
 
-@app.get("/restaurant", dependencies=[Depends(verify_token)])
+
+@app.get("/restaurant")
 def get_all_restaurant():
     # 레스토랑 정보를 데이터베이스에서 가져옵니다.
     restaurants = [
         Restaurant(id="1", name="My restaurant", thumbUrl="/1", tags=['떡볶이', '치즈', '매운맛'], priceRange="sale", ratings=0.0, ratingsCount=0, deliveryTime=10, deliveryFee=0),
-        Restaurant(id="1", name="My restaurant", thumbUrl="/2", tags=['ttttt'], priceRange="sale", ratings=0.0, ratingsCount=0, deliveryTime=20, deliveryFee=0),
-        Restaurant(id="1", name="My restaurant", thumbUrl="/3", tags=['ttttt'], priceRange="sale", ratings=0.0, ratingsCount=0, deliveryTime=30, deliveryFee=0),
-        Restaurant(id="1", name="My restaurant", thumbUrl="/4", tags=['ttttt'], priceRange="sale", ratings=0.0, ratingsCount=0, deliveryTime=40, deliveryFee=0),
-        Restaurant(id="1", name="My restaurant", thumbUrl="/6", tags=['ttttt'], priceRange="sale", ratings=0.0, ratingsCount=0, deliveryTime=50, deliveryFee=0),
+        Restaurant(id="2", name="My restaurant", thumbUrl="/2", tags=['ttttt'], priceRange="sale", ratings=0.0, ratingsCount=0, deliveryTime=20, deliveryFee=0),
+        Restaurant(id="3", name="My restaurant", thumbUrl="/3", tags=['ttttt'], priceRange="sale", ratings=0.0, ratingsCount=0, deliveryTime=30, deliveryFee=0),
+        Restaurant(id="4", name="My restaurant", thumbUrl="/4", tags=['ttttt'], priceRange="sale", ratings=0.0, ratingsCount=0, deliveryTime=40, deliveryFee=0),
+        Restaurant(id="5", name="My restaurant", thumbUrl="/6", tags=['ttttt'], priceRange="sale", ratings=0.0, ratingsCount=0, deliveryTime=50, deliveryFee=0),
 
     ]
     # 총 데이터 개수 계산
@@ -114,10 +96,16 @@ def get_all_restaurant():
     }
     return response_data
 
-@app.get("/restaurant/{rid}", dependencies=[Depends(verify_token)])
+@app.get("/restaurant/{rid}")
 def get_restaurant(rid: int = Path(...)):
     # 레스토랑 정보를 데이터베이스에서 가져옵니다.
-    restaurant = Restaurant(id="1", name="My restaurant", thumbUrl="/thumNail", tags=['ttttt'], priceRange="sale", ratings=0.0, ratingsCount=0, deliveryTime=30, deliveryFee=0)
+    restaurant = RestaurantDetail(id="1", name="시카고 핏자", thumbUrl="/600", tags=['느끼','피자'], priceRange="sale", ratings=0.0, ratingsCount=0, deliveryTime=30, deliveryFee=0, detail="느끼하지만, 느끼한 맛에 먹습니다.\n치즈가 넘쳐흐릅니다.", 
+                                  products=[Product(id="1", name="product1", imgUrl="/200", detail="기본적으로 매콤합니다. \n 그래도 맛있게 맵습니다.", price=1000),
+                                            Product(id="2", name="product2", imgUrl="/300", detail="기본적으로 매콤합니다. \n 그래도 맛있게 맵습니다.", price=2000),
+                                            Product(id="3", name="product3", imgUrl="/400", detail="기본적으로 매콤합니다. \n 그래도 맛있게 맵습니다.", price=3000),
+                                            Product(id="4", name="product4", imgUrl="/500", detail="기본적으로 매콤합니다. \n 그래도 맛있게 맵습니다.", price=4000),
+                                            Product(id="5", name="product5", imgUrl="/600", detail="기본적으로 매콤합니다. \n 그래도 맛있게 맵습니다.", price=5000),])
+    time.sleep(1)
     return restaurant
 
 @app.get("/restaurant/{rid}/ranking")

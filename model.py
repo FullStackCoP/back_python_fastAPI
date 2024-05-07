@@ -22,3 +22,13 @@ class PaginationMeta(BaseModel):
     count: int
     hasMore: bool
 
+class Product(BaseModel):
+    id: str
+    name: str
+    imgUrl: str
+    detail: str
+    price: int
+
+class RestaurantDetail(Restaurant):
+    detail: str
+    products: List[Product]
