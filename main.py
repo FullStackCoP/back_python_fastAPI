@@ -66,7 +66,7 @@ async def login(request: Request):
 def read_token(request: Request):
     print(request.headers)
     print(request.body)
-    return {"accessToken": "jadskjflwkejrkljwelrkjlwkjlrkjqwlke", "refreshToken": "15i4j15jkljasdfjiojewrkjl;qwer98112312" }
+    return {"accessToken": "jadskjflwkejrkljwelrkjlwkjlrkjqwlke" }
 
 
 @app.get("/restaurant")
